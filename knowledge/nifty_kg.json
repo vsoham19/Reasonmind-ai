@@ -1,0 +1,173 @@
+{
+    "nodes": [
+        {
+            "id": "reliance",
+            "type": "Company",
+            "name": "Reliance Industries Limited",
+            "sector": "Energy"
+        },
+        {
+            "id": "tcs",
+            "type": "Company",
+            "name": "Tata Consultancy Services",
+            "sector": "IT"
+        },
+        {
+            "id": "infosys",
+            "type": "Company",
+            "name": "Infosys Limited",
+            "sector": "IT"
+        },
+        {
+            "id": "hdfc_bank",
+            "type": "Company",
+            "name": "HDFC Bank Limited",
+            "sector": "Banking"
+        },
+        {
+            "id": "itc",
+            "type": "Company",
+            "name": "ITC Limited",
+            "sector": "FMCG"
+        },
+        {
+            "id": "hul",
+            "type": "Company",
+            "name": "Hindustan Unilever Limited",
+            "sector": "FMCG"
+        },
+        {
+            "id": "sun_pharma",
+            "type": "Company",
+            "name": "Sun Pharmaceutical Industries",
+            "sector": "Pharma"
+        },
+        {
+            "id": "l&t",
+            "type": "Company",
+            "name": "Larsen & Toubro Limited",
+            "sector": "Engineering"
+        },
+        {
+            "id": "it_sector",
+            "type": "Sector",
+            "name": "Information Technology",
+            "risk": "Medium"
+        },
+        {
+            "id": "banking_sector",
+            "type": "Sector",
+            "name": "Banking & Finance",
+            "risk": "Medium"
+        },
+        {
+            "id": "fmcg_sector",
+            "type": "Sector",
+            "name": "Fast Moving Consumer Goods",
+            "risk": "Low"
+        },
+        {
+            "id": "energy_sector",
+            "type": "Sector",
+            "name": "Energy & Oil",
+            "risk": "Medium"
+        },
+        {
+            "id": "pharma_sector",
+            "type": "Sector",
+            "name": "Pharmaceuticals",
+            "risk": "Low"
+        },
+        {
+            "id": "eng_sector",
+            "type": "Sector",
+            "name": "Engineering & Infra",
+            "risk": "High"
+        },
+        {
+            "id": "nifty_50",
+            "type": "Index",
+            "name": "Nifty 50"
+        }
+    ],
+    "edges": [
+        {
+            "source": "reliance",
+            "target": "energy_sector",
+            "relation": "BELONGS_TO"
+        },
+        {
+            "source": "tcs",
+            "target": "it_sector",
+            "relation": "BELONGS_TO"
+        },
+        {
+            "source": "infosys",
+            "target": "it_sector",
+            "relation": "BELONGS_TO"
+        },
+        {
+            "source": "hdfc_bank",
+            "target": "banking_sector",
+            "relation": "BELONGS_TO"
+        },
+        {
+            "source": "itc",
+            "target": "fmcg_sector",
+            "relation": "BELONGS_TO"
+        },
+        {
+            "source": "hul",
+            "target": "fmcg_sector",
+            "relation": "BELONGS_TO"
+        },
+        {
+            "source": "sun_pharma",
+            "target": "pharma_sector",
+            "relation": "BELONGS_TO"
+        },
+        {
+            "source": "l&t",
+            "target": "eng_sector",
+            "relation": "BELONGS_TO"
+        },
+        {
+            "source": "reliance",
+            "target": "nifty_50",
+            "relation": "CONSTITUENT_OF",
+            "weight": "Heavyweight"
+        },
+        {
+            "source": "tcs",
+            "target": "nifty_50",
+            "relation": "CONSTITUENT_OF",
+            "weight": "Heavyweight"
+        },
+        {
+            "source": "hdfc_bank",
+            "target": "nifty_50",
+            "relation": "CONSTITUENT_OF",
+            "weight": "Heavyweight"
+        },
+        {
+            "source": "tcs",
+            "target": "infosys",
+            "relation": "COMPETITOR"
+        },
+        {
+            "source": "itc",
+            "target": "hul",
+            "relation": "COMPETITOR"
+        },
+        {
+            "source": "it_sector",
+            "target": "nifty_50",
+            "relation": "SECTOR_OF"
+        },
+        {
+            "source": "banking_sector",
+            "target": "nifty_50",
+            "relation": "SECTOR_OF"
+        }
+    ]
+}
