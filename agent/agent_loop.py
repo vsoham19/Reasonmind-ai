@@ -31,9 +31,8 @@ class Agent:
             logger.info(f"Starting agent loop attempt {attempts + 1}")
             
             # 1. Plan
-            # If we have feedback from a previous failed attempt, we could potentially pass it to the planner,
-            # but for DAY 5 we keep it simple as specified.
-            plan = self.planner.create_plan(user_query)
+            # Pass the evaluator feedback to the planner if this is a retry attempt
+            plan = self.planner.create_plan(user_query, previous_feedback=last_feedback)
             logger.info(f"Plan created: {plan}")
 
             # 2. Execute
