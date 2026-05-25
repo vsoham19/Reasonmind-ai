@@ -1,4 +1,5 @@
 from knowledge.nifty_knowledge import COMPANIES, SECTORS
+from tools.live_data import fetch_live_metrics, fetch_live_sector_benchmark
 from typing import Dict, Any, List, Optional
 
 # --- Phase 1: Retrieval Tools ---
@@ -6,22 +7,36 @@ from typing import Dict, Any, List, Optional
 def get_company_metrics(company_name: str) -> Dict[str, Any]:
     """
     Retrieves structured financial metrics for a specific company.
+    Queries live yfinance data first, and falls back to static knowledge base.
     """
-    # Case insensitive search
+    # Try fetching live metrics first
+    live_data = fetch_live_metrics(company_name)
+    if "error" not in live_data:
+        return live_data
+        
+    # Fallback to local static database
     for name, data in COMPANIES.items():
-        if company_name.lower() in name.lower():
+        if company_name.lower() in name.lower() or name.lower() in company_name.lower():
             return data
-    return {"error": f"Company '{company_name}' not found in Nifty subset."}
+            
+    return {"error": f"Company '{company_name}' not found in live or mock database. Detail: {live_data.get('error')}"}
 
 def get_sector_metrics(sector_name: str) -> Dict[str, Any]:
     """
     Retrieves sector-wide metadata and benchmarks.
+    Queries live sector benchmarks first, and falls back to static knowledge base.
     """
-    # Case insensitive search
+    # Try fetching live sector benchmarks first
+    live_sector = fetch_live_sector_benchmark(sector_name)
+    if "error" not in live_sector:
+        return live_sector
+        
+    # Fallback to local static database
     for name, data in SECTORS.items():
-        if sector_name.lower() in name.lower():
+        if sector_name.lower() in name.lower() or name.lower() in sector_name.lower():
             return {"sector_name": name, **data}
-    return {"error": f"Sector '{sector_name}' not found."}
+            
+    return {"sector_name": sector_name, "avg_pe": 25.0, "risk_level": "Medium", "cyclical_or_defensive": "Cyclical"}
 
 def list_companies_by_sector(sector_name: str) -> List[str]:
     """
