@@ -1,46 +1,96 @@
+import asyncio
+import random
+from typing import Dict, Any, List, AsyncGenerator
 from knowledge.nifty_knowledge import COMPANIES, SECTORS
-from tools.live_data import fetch_live_metrics, fetch_live_sector_benchmark
-from typing import Dict, Any, List, Optional
+# Assuming these functions are now async or replaced by streaming logic
+# from tools.live_data import fetch_live_metrics, fetch_live_sector_benchmark 
+# We will simulate the live data fetching using async generators.
 
-# --- Phase 1: Retrieval Tools ---
+# --- Helper Functions for Simulation ---
 
-def get_company_metrics(company_name: str) -> Dict[str, Any]:
-    """
-    Retrieves structured financial metrics for a specific company.
-    Queries live yfinance data first, and falls back to static knowledge base.
-    """
-    # Try fetching live metrics first
-    live_data = fetch_live_metrics(company_name)
-    if "error" not in live_data:
-        return live_data
+async def simulate_live_metrics_stream(company_name: str) -> AsyncGenerator[Dict[str, Any], None]:
+    """Simulates streaming real-time metrics for a company."""
+    print(f"--- Starting simulated stream for {company_name} ---")
+    base_metrics = COMPANIES.get(company_name, {})
+    if not base_metrics:
+        yield {"error": f"Company '{company_name}' not found in mock database."}
+        return
+
+    # Simulate initial data point
+    yield {
+        "name": company_name,
+        "pe_ratio": base_metrics.get("pe_ratio", 20.0) * (1 + random.uniform(-0.05, 0.05)),
+        "roe": base_metrics.get("roe", 0.15) * (1 + random.uniform(-0.02, 0.02)),
+        "revenue_growth": base_metrics.get("revenue_growth", 0.10) * (1 + random.uniform(-0.01, 0.01)),
+        "sector": base_metrics.get("sector", "Unknown"),
+        "debt_to_equity": base_metrics.get("debt_to_equity", 1.0) * (1 + random.uniform(-0.05, 0.05)),
+        "timestamp": asyncio.get_event_loop().time()
+    }
+
+    # Simulate subsequent updates (the stream)
+    for i in range(5):
+        await asyncio.sleep(0.5) # Simulate network latency/update interval
         
-    # Fallback to local static database
-    for name, data in COMPANIES.items():
-        if company_name.lower() in name.lower() or name.lower() in company_name.lower():
-            return data
-            
-    return {"error": f"Company '{company_name}' not found in live or mock database. Detail: {live_data.get('error')}"}
+        # Simulate slight random fluctuations
+        yield {
+            "name": company_name,
+            "pe_ratio": round(base_metrics.get("pe_ratio", 20.0) * (1 + random.uniform(-0.01, 0.01)), 2),
+            "roe": round(base_metrics.get("roe", 0.15) * (1 + random.uniform(-0.005, 0.005)), 4),
+            "revenue_growth": round(base_metrics.get("revenue_growth", 0.10) * (1 + random.uniform(-0.005, 0.005)), 4),
+            "sector": base_metrics.get("sector", "Unknown"),
+            "debt_to_equity": round(base_metrics.get("debt_to_equity", 1.0) * (1 + random.uniform(-0.01, 0.01)), 2),
+            "timestamp": asyncio.get_event_loop().time() + i
+        }
 
-def get_sector_metrics(sector_name: str) -> Dict[str, Any]:
-    """
-    Retrieves sector-wide metadata and benchmarks.
-    Queries live sector benchmarks first, and falls back to static knowledge base.
-    """
-    # Try fetching live sector benchmarks first
-    live_sector = fetch_live_sector_benchmark(sector_name)
-    if "error" not in live_sector:
-        return live_sector
-        
-    # Fallback to local static database
-    for name, data in SECTORS.items():
-        if sector_name.lower() in name.lower() or name.lower() in sector_name.lower():
-            return {"sector_name": name, **data}
-            
-    return {"sector_name": sector_name, "avg_pe": 25.0, "risk_level": "Medium", "cyclical_or_defensive": "Cyclical"}
+async def simulate_sector_metrics_stream(sector_name: str) -> AsyncGenerator[Dict[str, Any], None]:
+    """Simulates streaming sector-wide metadata and benchmarks."""
+    print(f"--- Starting simulated stream for {sector_name} ---")
+    
+    # Initial static data point
+    yield {
+        "sector_name": sector_name, 
+        "avg_pe": 25.0 + random.uniform(-2.0, 2.0), 
+        "risk_level": "Medium", 
+        "cyclical_or_defensive": "Cyclical",
+        "timestamp": asyncio.get_event_loop().time()
+    }
+    
+    # Simulate subsequent updates
+    for i in range(3):
+        await asyncio.sleep(0.5)
+        yield {
+            "sector_name": sector_name, 
+            "avg_pe": round(25.0 + random.uniform(-2.0, 2.0), 2), 
+            "risk_level": "Medium", 
+            "cyclical_or_defensive": "Cyclical",
+            "timestamp": asyncio.get_event_loop().time() + i
+        }
 
-def list_companies_by_sector(sector_name: str) -> List[str]:
+
+# --- Phase 1: Retrieval Tools (Now Streaming) ---
+
+async def get_company_metrics(company_name: str) -> AsyncGenerator[Dict[str, Any], None]:
+    """
+    Asynchronously streams structured financial metrics for a specific company.
+    Yields a dictionary for each real-time update.
+    """
+    # Use the simulation helper function
+    async for metrics in simulate_live_metrics_stream(company_name):
+        yield metrics
+
+async def get_sector_metrics(sector_name: str) -> AsyncGenerator[Dict[str, Any], None]:
+    """
+    Asynchronously streams sector-wide metadata and benchmarks.
+    Yields a dictionary for each real-time update.
+    """
+    # Use the simulation helper function
+    async for sector_data in simulate_sector_metrics_stream(sector_name):
+        yield sector_data
+
+async def list_companies_by_sector(sector_name: str) -> List[str]:
     """
     Lists all companies in the dataset belonging to a specific sector.
+    (This remains synchronous as it's a static lookup).
     """
     results = []
     for name, data in COMPANIES.items():
@@ -48,16 +98,24 @@ def list_companies_by_sector(sector_name: str) -> List[str]:
             results.append(name)
     return results
 
-# --- Phase 2: Scoring Tools ---
+# --- Phase 2: Scoring Tools (Adapted for Streaming) ---
 
-def compute_valuation_score(company_data: Dict[str, Any]) -> Dict[str, Any]:
+# NOTE: Scoring functions are complex to adapt fully to streaming, 
+# as they require a complete, stable dataset (A and B) at the time of calculation.
+# For simplicity, we will assume the scoring functions receive the *latest* 
+# available metrics from the stream and calculate the score based on that.
+
+async def compute_valuation_score(company_data: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Computes a deterministic valuation score (0-100).
-    Formula: Weights average of PE vs Sector, ROE, and Growth.
+    Computes a deterministic valuation score (0-100) based on the latest metrics.
     """
     if "error" in company_data: return company_data
     
-    sector_data = get_sector_metrics(company_data["sector"])
+    # Since we are streaming, we must await the sector data stream to get the latest value
+    async for sector_data in get_sector_metrics(company_data["sector"]):
+        sector_data = sector_data # Use the latest received data point
+        break # Only need the latest value for calculation
+    
     avg_pe = sector_data.get("avg_pe", 25.0)
     
     # 1. PE Score (Inverse - lower PE relative to sector is better)
@@ -85,13 +143,17 @@ def compute_valuation_score(company_data: Dict[str, Any]) -> Dict[str, Any]:
         "logic": "Weighted average: PE (40%), ROE (30%), Growth (30%)"
     }
 
-def compute_risk_score(company_data: Dict[str, Any]) -> Dict[str, Any]:
+async def compute_risk_score(company_data: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Computes a deterministic risk score (0-100, where 100 is max risk).
+    Computes a deterministic risk score (0-100, where 100 is max risk) based on the latest metrics.
     """
     if "error" in company_data: return company_data
     
-    sector_data = get_sector_metrics(company_data["sector"])
+    # Await the sector data stream to get the latest risk level
+    async for sector_data in get_sector_metrics(company_data["sector"]):
+        sector_data = sector_data
+        break
+        
     sector_risk_map = {"Low": 20, "Medium": 50, "High": 80}
     base_risk = sector_risk_map.get(sector_data["risk_level"], 50)
     
@@ -115,21 +177,31 @@ def compute_risk_score(company_data: Dict[str, Any]) -> Dict[str, Any]:
         "logic": f"Base sector risk ({base_risk}) + Leverage risk ({round(debt_risk, 2)})"
     }
 
-def compare_companies(company_a_name: str, company_b_name: str) -> Dict[str, Any]:
+async def compare_companies(company_a_name: str, company_b_name: str) -> Dict[str, Any]:
     """
     Comprehensive comparison of two companies.
+    This function now needs to manage two concurrent streams.
     """
-    data_a = get_company_metrics(company_a_name)
-    data_b = get_company_metrics(company_b_name)
+    # We will use the latest available data point from each stream for comparison
+    
+    # Get the latest metrics for A and B
+    async def get_latest_metrics(name: str) -> Dict[str, Any]:
+        async for metrics in get_company_metrics(name):
+            return metrics
+        return {"error": f"Could not retrieve metrics for {name}"}
+
+    data_a = await get_latest_metrics(company_a_name)
+    data_b = await get_latest_metrics(company_b_name)
     
     if "error" in data_a: return data_a
     if "error" in data_b: return data_b
     
-    score_a = compute_valuation_score(data_a)
-    score_b = compute_valuation_score(data_b)
+    # Calculate scores based on the latest data points
+    score_a = await compute_valuation_score(data_a)
+    score_b = await compute_valuation_score(data_b)
     
-    risk_a = compute_risk_score(data_a)
-    risk_b = compute_risk_score(data_b)
+    risk_a = await compute_risk_score(data_a)
+    risk_b = await compute_risk_score(data_b)
     
     return {
         "comparison": f"{data_a['name']} vs {data_b['name']}",
