@@ -1,6 +1,7 @@
 import json
 import logging
 from typing import Any, Dict, List, Optional
+import asyncio # Import asyncio for async operations
 
 from agent.planner import ReasoningPlanner
 from agent.executor import ToolExecutor
@@ -15,14 +16,16 @@ logger = logging.getLogger(__name__)
 class Agent:
     def __init__(self, max_retries: int = 1):
         self.planner = ReasoningPlanner()
+        # The executor must now be initialized and used asynchronously
         self.executor = ToolExecutor(TOOL_REGISTRY)
         self.synthesizer = ReasoningSynthesizer()
         self.evaluator = Evaluator()
         self.max_retries = max_retries
 
-    def run(self, user_query: str) -> Dict[str, Any]:
+    async def run(self, user_query: str) -> Dict[str, Any]:
         """
         Runs the agent loop: Plan -> Execute -> Synthesize -> Evaluate (with optional retry).
+        This method is now asynchronous to handle streaming tool results.
         """
         attempts = 0
         last_feedback = None
@@ -30,8 +33,7 @@ class Agent:
         while attempts <= self.max_retries:
             logger.info(f"Starting agent loop attempt {attempts + 1}")
             
-            # 1. Plan
-            # Pass the evaluator feedback to the planner if this is a retry attempt
+            # 1. Plan (Assuming planner.create_plan is synchronous for now)
             plan = self.planner.create_plan(user_query, previous_feedback=last_feedback)
             logger.info(f"Plan created: {plan}")
 
@@ -62,17 +64,32 @@ class Agent:
 
                     try:
                         logger.info(f"Executing tool {tool_name} with resolved args")
-                        result = self.executor.execute(tool_name, **resolved_args)
-                        tool_results[tool_name] = result
+                        
+                        # Await the execution, which returns an async generator/stream
+                        result_stream = await self.executor.execute(tool_name, **resolved_args)
+                        
+                        # Process the stream event by event
+                        # We collect the *latest* state of the tool results for the synthesis step.
+                        # In a real system, we might pass this stream to the synthesizer immediately.
+                        latest_result = None
+                        async for result_event in result_stream:
+                            # Store the event/result as it arrives
+                            latest_result = result_event
+                            # Optional: Log the event for real-time feedback
+                            # logger.debug(f"Received stream event for {tool_name}: {result_event}")
+                        
+                        # Store the final/latest result from the stream
+                        tool_results[tool_name] = latest_result
+                        
                     except Exception as e:
                         logger.error(f"Error executing tool {tool_name}: {e}")
                         tool_results[tool_name] = f"Error: {str(e)}"
 
-            # 3. Synthesize
+            # 3. Synthesize (Assuming synthesizer.synthesize is synchronous for now)
             synthesis = self.synthesizer.synthesize(user_query, tool_results)
             logger.info(f"Synthesis complete: {synthesis}")
 
-            # 4. Evaluate
+            # 4. Evaluate (Assuming evaluator.evaluate is synchronous for now)
             evaluation = self.evaluator.evaluate(user_query, synthesis.get("final_answer", ""))
             logger.info(f"Evaluation: {evaluation}")
 
