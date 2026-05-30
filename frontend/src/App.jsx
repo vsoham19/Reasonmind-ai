@@ -1484,7 +1484,7 @@ function App() {
                 <div className="glass-card rounded-2xl p-5 space-y-3">
                   <h3 className="text-[10px] font-bold text-[var(--color-text-tertiary)] uppercase tracking-wider">System Status</h3>
                   {[
-                    { label: "Flask API", port: "5000", ok: true },
+                    { label: "Flask API", port: "Render", ok: true },
                     { label: "React Dashboard", port: "5173", ok: true },
                     { label: "NSE Feed", port: "—", ok: marketOpen },
                   ].map((s, i) => (
