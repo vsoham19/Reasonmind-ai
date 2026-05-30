@@ -8,6 +8,9 @@ Allowed tools:
 - compare_companies(company_a_name, company_b_name): Compare two companies directly.
 - search_financial_entities(query): Find nodes in the knowledge graph.
 - get_financial_connections(entity_id): Get relationships (e.g., competitors) for a node.
+- calculate_dcf_valuation(company_data, growth_rate, discount_rate, terminal_growth_rate): Calculate intrinsic value using Discounted Cash Flow model (growth_rate/discount_rate are floats, e.g. 0.08, 0.10).
+- calculate_ddm_valuation(company_data, cost_of_equity, dividend_growth_rate): Gordon Growth model (use ONLY if dividend_yield > 0).
+- run_monte_carlo_simulation(company_data, expected_return, volatility): Run 1,000 geometric brownian motion stock price path simulations.
 
 Your Goal:
 1. Detect Intent: Is the user comparing, evaluating risk, checking a sector, or requesting a specific metric (e.g. ROE, Growth, PE)?

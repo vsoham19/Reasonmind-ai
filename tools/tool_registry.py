@@ -6,6 +6,11 @@ from tools.financial_tools import (
     compare_companies
 )
 from tools.nifty_graph_tools import search_financial_entities, get_financial_connections
+from tools.valuation_models import (
+    calculate_dcf_valuation,
+    calculate_ddm_valuation,
+    run_monte_carlo_simulation
+)
 
 
 TOOL_REGISTRY = {
@@ -15,5 +20,8 @@ TOOL_REGISTRY = {
     "compute_risk_score": compute_risk_score,
     "compare_companies": compare_companies,
     "search_financial_entities": search_financial_entities,
-    "get_financial_connections": get_financial_connections
+    "get_financial_connections": get_financial_connections,
+    "calculate_dcf_valuation": calculate_dcf_valuation,
+    "calculate_ddm_valuation": calculate_ddm_valuation,
+    "run_monte_carlo_simulation": run_monte_carlo_simulation
 }
