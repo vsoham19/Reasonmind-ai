@@ -1,4 +1,10 @@
+fastapi
+uvicorn[standard]
 groq
-Flask
 python-dotenv
 yfinance
+requests
+pandas
+numpy
+pydantic
+python-multipart
