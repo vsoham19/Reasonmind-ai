@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 
+const API_BASE = "https://reasonmind-ai.onrender.com"
 // ═══════════════════════════════════════════════════════
 // NIFTY 50 CONSTITUENTS — Base Reference Data
 // ═══════════════════════════════════════════════════════
@@ -515,7 +516,7 @@ function App() {
     setHistoricalData(null)
     
     try {
-      const res = await fetch(`http://localhost:5000/api/historical/${stock.ticker}`)
+      const res = await fetch(`https://reasonmind-ai.onrender.com/api/historical/${stock.ticker}`)
       const data = await res.json()
       if (data.status === 'success') {
         const candlesSorted = [...data.candlesticks].sort((a, b) => new Date(a.date) - new Date(b.date))
@@ -596,7 +597,7 @@ function App() {
   useEffect(() => {
     const fetchLivePrices = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/stocks')
+        const res = await fetch('https://reasonmind-ai.onrender.com/api/stocks')
         const data = await res.json()
         if (data.status === 'success') {
           if (data.prices) {
@@ -665,7 +666,7 @@ function App() {
     setSelectedDcfTicker(ticker)
     setDcfLoading(true)
     try {
-      const res = await fetch(`http://localhost:5000/api/dcf-company/${ticker}`)
+      const res = await fetch(`https://reasonmind-ai.onrender.com/api/dcf-company/${ticker}`)
       const data = await res.json()
       if (data.status === 'success') {
         setInitialFCF(data.initial_fcf_cr)
@@ -805,7 +806,7 @@ function App() {
     
     try {
       const historyFormatted = chatHistory.map(c => ({ role: c.role, text: c.text }))
-      const res = await fetch('http://localhost:5000/api/chat', {
+      const res = await fetch('https://reasonmind-ai.onrender.com/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
